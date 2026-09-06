@@ -1,0 +1,144 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+body {
+  color: #1e293b;
+  background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom Slim Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark sidebar scrollbar */
+.dark-scroll::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark-scroll::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* MCQ Table Styling in Editors, Option Cards and Previews */
+table.mcq-table, [contenteditable] table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0;
+  font-size: 12px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+table.mcq-table th, [contenteditable] table th {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 6px 8px;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+}
+
+table.mcq-table td, [contenteditable] table td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 8px;
+  color: #334155;
+  min-width: 32px;
+}
+
+[contenteditable] table td:focus, [contenteditable] table th:focus {
+  outline: 2px solid #6366f1;
+  background-color: #eef2ff;
+}
+
+table.mcq-table tr:hover, [contenteditable] table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Rich HTML Preview styling for WysiwygEditor and student preview */
+.rich-preview {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #1e293b;
+}
+
+.rich-preview p {
+  margin-bottom: 0.5rem;
+}
+
+.rich-preview p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 12px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.rich-preview th {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 6px 8px;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+}
+
+.rich-preview td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 8px;
+  color: #334155;
+  min-width: 32px;
+}
+
+.rich-preview tr:hover {
+  background-color: #f8fafc;
+}
+
+.rich-preview img {
+  max-width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin: 6px auto;
+  display: inline-block;
+}
+
+.rich-preview sub {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  bottom: -0.25em;
+}
+
+.rich-preview sup {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  top: -0.5em;
+}
+

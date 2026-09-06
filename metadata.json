@@ -1,0 +1,6 @@
+{
+  "name": "Test Factory MCQ Manager",
+  "description": "Airtable-connected bilingual MCQ content management system with WYSIWYG rich text, auto image paste upload, bulk operations, and audit tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
