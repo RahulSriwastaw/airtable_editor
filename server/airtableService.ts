@@ -54,7 +54,10 @@ class AirtableService {
   private tableFieldMappings: Record<string, Record<string, Record<string, { airtableFieldName: string; isAttachment?: boolean; fieldType?: string }>>> = {};
   // Raw columns discovered in Airtable per Base and Table
   private tableRawColumns: Record<string, Record<string, string[]>> = {};
-  private basesFilePath = path.join(process.cwd(), 'data', 'bases.json');
+  private isVercel = Boolean(process.env.VERCEL);
+  private basesFilePath = process.env.VERCEL
+    ? path.join('/tmp', 'bases.json')
+    : path.join(process.cwd(), 'data', 'bases.json');
 
   private saveBasesToDisk() {
     try {
@@ -70,8 +73,12 @@ class AirtableService {
 
   private loadBasesFromDisk() {
     try {
-      if (fs.existsSync(this.basesFilePath)) {
-        const data = fs.readFileSync(this.basesFilePath, 'utf-8');
+      let targetPath = this.basesFilePath;
+      if (!fs.existsSync(targetPath) && fs.existsSync(path.join(process.cwd(), 'data', 'bases.json'))) {
+        targetPath = path.join(process.cwd(), 'data', 'bases.json');
+      }
+      if (fs.existsSync(targetPath)) {
+        const data = fs.readFileSync(targetPath, 'utf-8');
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed) && parsed.length > 0) {
           this.bases = parsed;
@@ -83,9 +90,18 @@ class AirtableService {
   }
 
   constructor() {
-    this.uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(this.uploadsDir)) {
-      fs.mkdirSync(this.uploadsDir, { recursive: true });
+    this.uploadsDir = this.isVercel ? path.join('/tmp', 'uploads') : path.join(process.cwd(), 'public', 'uploads');
+    try {
+      if (!fs.existsSync(this.uploadsDir)) {
+        fs.mkdirSync(this.uploadsDir, { recursive: true });
+      }
+    } catch {
+      this.uploadsDir = path.join('/tmp', 'uploads');
+      try {
+        if (!fs.existsSync(this.uploadsDir)) {
+          fs.mkdirSync(this.uploadsDir, { recursive: true });
+        }
+      } catch {}
     }
 
     this.loadBasesFromDisk();
