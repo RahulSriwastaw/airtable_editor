@@ -170,6 +170,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   };
 
+  // Connect All Discovered Bases in 1 Click
+  const handleConnectAllDiscoveredBases = async () => {
+    const unconn = discoveredBases.filter(b => !bases.some(cb => cb.baseId.toLowerCase() === b.baseId.toLowerCase()));
+    if (unconn.length === 0) return;
+    setIsDiscovering(true);
+    for (const b of unconn) {
+      try {
+        await api.addBase({
+          baseId: b.baseId,
+          name: b.name,
+          description: `Auto-connected from Airtable Account`,
+          category: 'General',
+          color: 'indigo',
+          isActive: false
+        });
+      } catch (e) {
+        console.warn('Failed to auto-connect base:', b.name, e);
+      }
+    }
+    await fetchFullConfig();
+    onConfigSaved();
+    setDiscoveredBases(prev => prev.map(b => ({ ...b, isConnected: true })));
+    setIsDiscovering(false);
+  };
+
   const handleTestSingleBase = async (baseItem: AirtableBaseItem) => {
     setTestingBaseId(baseItem.baseId);
     try {
@@ -284,7 +309,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       });
       await fetchFullConfig();
       onConfigSaved();
-      alert('Global configuration saved successfully!');
+
+      // Auto-scan bases if PAT is provided
+      if (apiKey && apiKey.trim().startsWith('pat')) {
+        setActiveTab('bases');
+        handleDiscoverAccountBases();
+      } else {
+        alert('Global configuration saved successfully!');
+      }
     } catch (err: any) {
       alert(`Failed to save global keys: ${err.message}`);
     } finally {
@@ -426,13 +458,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         </span>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowDiscoveryView(false)}
-                      className="text-xs text-slate-400 hover:text-slate-600 font-medium"
-                    >
-                      Close
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {discoveredBases.some(b => !bases.some(cb => cb.baseId.toLowerCase() === b.baseId.toLowerCase())) && (
+                        <button
+                          type="button"
+                          onClick={handleConnectAllDiscoveredBases}
+                          disabled={isDiscovering}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1 rounded-lg shadow-2xs transition-colors disabled:opacity-50"
+                        >
+                          <Zap className="w-3 h-3 text-amber-300" />
+                          <span>⚡ Connect All Discovered</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowDiscoveryView(false)}
+                        className="text-xs text-slate-400 hover:text-slate-600 font-medium px-1.5 py-0.5 rounded"
+                      >
+                        Close
+                      </button>
+                    </div>
                   </div>
 
                   {discoverError && (
