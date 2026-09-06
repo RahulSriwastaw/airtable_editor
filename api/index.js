@@ -664,17 +664,57 @@ var AirtableService = class {
       activeBaseId: this.getActiveBase()?.baseId || ""
     };
   }
-  async setActiveBase(baseId) {
-    const target = this.bases.find((b) => b.baseId === baseId || b.id === baseId);
+  async setActiveBase(baseId, customApiKey, customName) {
+    let cleanBaseId = (baseId || "").trim();
+    const match = cleanBaseId.match(/app[a-zA-Z0-9]{10,}/);
+    if (match) {
+      cleanBaseId = match[0];
+    }
+    let target = this.bases.find((b) => b.baseId.toLowerCase() === cleanBaseId.toLowerCase() || b.id === cleanBaseId);
+    if (!target && cleanBaseId.startsWith("app")) {
+      console.log(`[Airtable Auto-Discover] Base "${cleanBaseId}" not in memory. Auto-fetching details from Airtable...`);
+      const apiKey = (customApiKey || "").trim() || this.config.apiKey || process.env.AIRTABLE_API_KEY || "";
+      let baseName = customName || `Base ${cleanBaseId}`;
+      let tableCount = 0;
+      if (apiKey) {
+        try {
+          const meta = await this.fetchBaseMeta(cleanBaseId, apiKey);
+          if (meta.success && meta.name) {
+            baseName = meta.name;
+            tableCount = meta.tableCount || 0;
+          }
+        } catch (e) {
+          console.warn("Could not auto-fetch base meta:", e);
+        }
+      }
+      target = {
+        id: `base_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        baseId: cleanBaseId,
+        name: baseName,
+        description: "Auto-connected Airtable Base",
+        category: "General",
+        color: "indigo",
+        apiKey: customApiKey || void 0,
+        isActive: true,
+        tableCount,
+        status: "connected",
+        lastConnectedAt: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      this.bases.push(target);
+      this.saveBasesToDisk();
+    }
     if (!target) {
       throw new Error(`Base ${baseId} not found.`);
     }
     this.bases.forEach((b) => {
-      b.isActive = b.baseId === target.baseId || b.id === target.id;
+      b.isActive = b.baseId.toLowerCase() === target.baseId.toLowerCase() || b.id === target.id;
     });
     this.config.baseId = target.baseId;
     this.config.activeBaseId = target.baseId;
     this.config.activeBaseName = target.name;
+    if (target.apiKey) {
+      this.config.apiKey = target.apiKey;
+    }
     const test = await this.testBaseConnection(target.baseId, target.apiKey);
     target.status = test.success ? "connected" : "error";
     this.config.isConnected = test.success;
@@ -2445,7 +2485,8 @@ function createExpressApp() {
   apiRouter.post("/bases/:baseId/activate", async (req, res) => {
     try {
       const { baseId } = req.params;
-      const config = await airtableService.setActiveBase(baseId);
+      const { apiKey, name } = req.body || {};
+      const config = await airtableService.setActiveBase(baseId, apiKey, name);
       res.json({ success: true, config, activeBaseId: config.activeBaseId, activeBaseName: config.activeBaseName });
     } catch (e) {
       res.status(400).json({ error: e.message });

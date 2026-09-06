@@ -217,7 +217,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleSwitchActiveBase = async (baseId: string) => {
     try {
-      await api.switchActiveBase(baseId);
+      const baseObj = bases.find(b => b.baseId === baseId || b.id === baseId);
+      await api.switchActiveBase(baseId, baseObj?.name, baseObj?.apiKey);
       await fetchFullConfig();
       if (onBaseSwitched) {
         onBaseSwitched(baseId);

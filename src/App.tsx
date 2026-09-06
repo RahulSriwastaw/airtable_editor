@@ -131,7 +131,23 @@ export default function App({ user, onSignOut }: { user?: any; onSignOut?: () =>
         api.getConfig().catch(() => null)
       ]);
 
-      setBases(fetchedBases);
+      let currentBases = fetchedBases;
+      if (fetchedBases.length > 0) {
+        localStorage.setItem('airtable_cached_bases', JSON.stringify(fetchedBases));
+      } else {
+        const cached = localStorage.getItem('airtable_cached_bases');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              currentBases = parsed;
+              parsed.forEach(b => api.addBase(b).catch(() => {}));
+            }
+          } catch {}
+        }
+      }
+
+      setBases(currentBases);
       setTables(fetchedTables);
 
       if (config) {
@@ -178,7 +194,8 @@ export default function App({ user, onSignOut }: { user?: any; onSignOut?: () =>
 
     setIsLoadingTables(true);
     try {
-      const switchRes = await api.switchActiveBase(baseId);
+      const baseObj = bases.find(b => b.baseId === baseId || b.id === baseId);
+      const switchRes = await api.switchActiveBase(baseId, baseObj?.name, baseObj?.apiKey);
       setActiveBaseId(switchRes.activeBaseId);
       setActiveBaseName(switchRes.activeBaseName);
 

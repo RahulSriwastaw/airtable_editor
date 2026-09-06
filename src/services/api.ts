@@ -69,9 +69,11 @@ export const api = {
     return res.json();
   },
 
-  async switchActiveBase(baseId: string): Promise<{ success: boolean; config: AirtableConfig; activeBaseId: string; activeBaseName: string }> {
+  async switchActiveBase(baseId: string, name?: string, apiKey?: string): Promise<{ success: boolean; config: AirtableConfig; activeBaseId: string; activeBaseName: string }> {
     const res = await fetch(`/api/bases/${encodeURIComponent(baseId)}/activate`, {
-      method: 'POST'
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, apiKey })
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

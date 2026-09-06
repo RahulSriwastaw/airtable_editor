@@ -105,7 +105,8 @@ export function createExpressApp() {
   apiRouter.post('/bases/:baseId/activate', async (req, res) => {
     try {
       const { baseId } = req.params;
-      const config = await airtableService.setActiveBase(baseId);
+      const { apiKey, name } = req.body || {};
+      const config = await airtableService.setActiveBase(baseId, apiKey, name);
       res.json({ success: true, config, activeBaseId: config.activeBaseId, activeBaseName: config.activeBaseName });
     } catch (e: any) {
       res.status(400).json({ error: e.message });
